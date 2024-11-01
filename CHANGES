@@ -1,8 +1,12 @@
 HikariCP Changes
 
+Changes in 6.0.1
+
+ * change default maxLifetime variance from 2.5% to 25% to further avoid mass connection die-off dips
+
 Changes in 6.0.0
 
- * fixed #2152 duplicate connection in try with resources clause caused close() being called twice on each connection.
+ * fixed #2152 duplicate connection in try with resources clause caused close() being called twice on each connection
 
  * merged #2226 consistent handling of errorCode and sqlState in timeout exception
 
