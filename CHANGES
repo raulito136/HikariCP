@@ -1,6 +1,6 @@
 HikariCP Changes
 
-Changes in 6.0.1
+Changes in 6.1.0
 
  * fixed #1960 allow SQLExceptionOverride to adjudicate all exceptions for eviction
 
