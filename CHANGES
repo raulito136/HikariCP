@@ -4,7 +4,13 @@ Changes in 6.0.1
 
  * change default maxLifetime variance from 2.5% to 25% to further avoid mass connection die-off dips
 
- * Dropwizard 5 metrics are now supported via the setMetricRegistry() method in HikariConfig and in HikariDataSource
+ * merged #1962 Dropwizard 5 metrics are now supported via the setMetricRegistry() method in HikariConfig and in HikariDataSource
+
+ * merged #2244 Improve JavassistProxyFactory
+
+ * merged #2243 Fix inconsistency between isWrapperFor and unwrap
+
+ * fixed #1960 allow SQLExceptionOverride to adjudicate all exceptions for eviction
 
 Changes in 6.0.0
 
