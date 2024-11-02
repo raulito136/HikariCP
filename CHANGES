@@ -4,6 +4,8 @@ Changes in 6.0.1
 
  * change default maxLifetime variance from 2.5% to 25% to further avoid mass connection die-off dips
 
+ * Dropwizard 5 metrics are now supported via the setMetricRegistry() method in HikariConfig and in HikariDataSource
+
 Changes in 6.0.0
 
  * fixed #2152 duplicate connection in try with resources clause caused close() being called twice on each connection
