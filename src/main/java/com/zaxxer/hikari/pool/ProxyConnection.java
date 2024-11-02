@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import static com.zaxxer.hikari.SQLExceptionOverride.Override.CONTINUE_EVICT;
 import static com.zaxxer.hikari.SQLExceptionOverride.Override.DO_NOT_EVICT;
 
 /**
@@ -155,14 +156,13 @@ public abstract class ProxyConnection implements Connection
       final var exceptionOverride = poolEntry.getPoolBase().exceptionOverride;
       for (int depth = 0; delegate != ClosedConnection.CLOSED_CONNECTION && nse != null && depth < 10; depth++) {
          final var sqlState = nse.getSQLState();
-         if (sqlState != null && sqlState.startsWith("08")
+         if (exceptionOverride != null && exceptionOverride.adjudicate(nse) == DO_NOT_EVICT) {
+            break;
+         }
+         else if (sqlState != null && sqlState.startsWith("08")
              || nse instanceof SQLTimeoutException
              || ERROR_STATES.contains(sqlState)
              || ERROR_CODES.contains(nse.getErrorCode())) {
-
-            if (exceptionOverride != null && exceptionOverride.adjudicate(nse) == DO_NOT_EVICT) {
-               break;
-            }
 
             // broken connection
             evict = true;
@@ -544,20 +544,17 @@ public abstract class ProxyConnection implements Connection
       {
          InvocationHandler handler = (proxy, method, args) -> {
             final String methodName = method.getName();
-            if ("isClosed".equals(methodName)) {
-               return Boolean.TRUE;
-            }
-            else if ("isValid".equals(methodName)) {
-               return Boolean.FALSE;
-            }
-            if ("abort".equals(methodName)) {
-               return Void.TYPE;
-            }
-            if ("close".equals(methodName)) {
-               return Void.TYPE;
-            }
-            else if ("toString".equals(methodName)) {
-               return ClosedConnection.class.getCanonicalName();
+            switch (methodName) {
+               case "isClosed":
+                  return Boolean.TRUE;
+               case "isValid":
+                  return Boolean.FALSE;
+               case "abort":
+                  return Void.TYPE;
+               case "close":
+                  return Void.TYPE;
+               case "toString":
+                  return ClosedConnection.class.getCanonicalName();
             }
 
             throw new SQLException("Connection is closed");
