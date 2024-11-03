@@ -4,13 +4,15 @@ Changes in 6.1.0
 
  * fixed #1960 allow SQLExceptionOverride to adjudicate all exceptions for eviction
 
- * merged #1962 Dropwizard 5 metrics are now supported via the setMetricRegistry() method in HikariConfig and in HikariDataSource
+ * merged #1962 dropwizard 5 metrics are now supported via the setMetricRegistry() method in HikariConfig and in HikariDataSource
 
- * merged #2244 Improve JavassistProxyFactory
+ * merged #2244 improve JavassistProxyFactory
 
- * merged #2243 Fix inconsistency between isWrapperFor and unwrap
+ * merged #2243 fix inconsistency between isWrapperFor and unwrap
 
  * merged #1827 support loading properties file in unnamed resources module
+
+ * merged #1842 don't clear isCommitStateDirty flag in setReadOnly
 
  * change default maxLifetime variance from 2.5% to 25% to further avoid mass connection die-off dips
 
