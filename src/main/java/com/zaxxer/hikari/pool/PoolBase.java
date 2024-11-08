@@ -41,13 +41,13 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.zaxxer.hikari.pool.ProxyConnection.*;
 import static com.zaxxer.hikari.util.ClockSource.*;
 import static com.zaxxer.hikari.util.UtilityElf.createInstance;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.*;
 
 abstract class PoolBase
 {
@@ -60,6 +60,7 @@ abstract class PoolBase
 
    volatile String catalog;
    final AtomicReference<Exception> lastConnectionFailure;
+   final AtomicLong connectionFailureTimestamp;
 
    long connectionTimeout;
    long validationTimeout;
@@ -110,6 +111,7 @@ abstract class PoolBase
       this.connectionTimeout = config.getConnectionTimeout();
       this.validationTimeout = config.getValidationTimeout();
       this.lastConnectionFailure = new AtomicReference<>();
+      this.connectionFailureTimestamp = new AtomicLong();
 
       initializeDataSource();
    }
@@ -198,9 +200,9 @@ abstract class PoolBase
    //                         PoolEntry methods
    // ***********************************************************************
 
-   PoolEntry newPoolEntry() throws Exception
+   PoolEntry newPoolEntry(final boolean isEmptyPool) throws Exception
    {
-      return new PoolEntry(newConnection(), this, isReadOnly, isAutoCommit);
+      return new PoolEntry(newConnection(isEmptyPool), this, isReadOnly, isAutoCommit);
    }
 
    void resetConnectionState(final Connection connection, final ProxyConnection proxyConnection, final int dirtyBits) throws SQLException
@@ -347,9 +349,9 @@ abstract class PoolBase
    /**
     * Obtain connection from data source.
     *
-    * @return a Connection connection
+    * @return a Connection
     */
-   private Connection newConnection() throws Exception
+   private Connection newConnection(final boolean isEmptyPool) throws Exception
    {
       final var start = currentTime();
       final var id = java.util.UUID.randomUUID();
@@ -360,24 +362,32 @@ abstract class PoolBase
          final var username = credentials.getUsername();
          final var password = credentials.getPassword();
 
-         logger.debug("{} - Attempting to create/setup new connection: {} ", poolName, id.toString());
-         
+         logger.debug("{} - Attempting to create/setup new connection ({})", poolName, id);
+
          connection = (username == null) ? dataSource.getConnection() : dataSource.getConnection(username, password);
          if (connection == null) {
             throw new SQLTransientConnectionException("DataSource returned null unexpectedly");
          }
 
          setupConnection(connection);
-         logger.debug("{} - Established new connection: {}", poolName, id);
+
          lastConnectionFailure.set(null);
+         connectionFailureTimestamp.set(0);
+
+         logger.debug("{} - Established new connection ({})", poolName, id);
          return connection;
       }
       catch (Exception e) {
-         if (connection != null) {
-            quietlyCloseConnection(connection, "(Failed to create/setup connection for id:".concat(id.toString()));
+         logger.debug("{} - Failed to create/setup connection ({}): {}", poolName, id, e.getMessage());
+
+         connectionFailureTimestamp.compareAndSet(0, start);
+         if (isEmptyPool && elapsedMillis(connectionFailureTimestamp.get()) > MINUTES.toMillis(1)) {
+            logger.warn("{} - Pool is empty, failed to create/setup connection ({})", poolName, id, e);
+            connectionFailureTimestamp.set(0);
          }
-         else if (getLastConnectionFailure() == null) {
-            logger.debug("{} - Failed to create/setup connection: {} {}", poolName, e.getMessage(), id.toString());
+
+         if (connection != null) {
+            quietlyCloseConnection(connection, "(Failed to create/setup connection (".concat(id.toString()).concat(")"));
          }
 
          lastConnectionFailure.set(e);
@@ -392,7 +402,7 @@ abstract class PoolBase
    }
 
    /**
-    * Setup a connection initial state.
+    * Set up a connection initial state.
     *
     * @param connection a Connection
     * @throws ConnectionSetupException thrown if any exception is encountered
@@ -634,7 +644,7 @@ abstract class PoolBase
    /**
     * This will create a string for debug logging. Given a set of "reset bits", this
     * method will return a concatenated string, for example:
-    *
+    * <p
     * Input : 0b00110
     * Output: "autoCommit, isolation"
     *

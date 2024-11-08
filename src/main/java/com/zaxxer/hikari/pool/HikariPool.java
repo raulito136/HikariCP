@@ -481,7 +481,7 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
    private PoolEntry createPoolEntry()
    {
       try {
-         final var poolEntry = newPoolEntry();
+         final var poolEntry = newPoolEntry(getTotalConnections() == 0);
 
          final var maxLifetime = config.getMaxLifetime();
          if (maxLifetime > 0) {
@@ -503,8 +503,7 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
       }
       catch (ConnectionSetupException e) {
          if (poolState == POOL_NORMAL) { // we check POOL_NORMAL to avoid a flood of messages if shutdown() is running concurrently
-            logger.error("{} - Error thrown while acquiring connection from data source", poolName, e.getCause());
-            lastConnectionFailure.set(e);
+            logger.debug("{} - Error thrown while acquiring connection from data source", poolName, e.getCause());
          }
       }
       catch (Exception e) {
