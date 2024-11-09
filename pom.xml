@@ -46,7 +46,7 @@
       <postgresql.version>42.7.4</postgresql.version>
       <log4j.version>2.18.0</log4j.version>
       <slf4j.version>1.7.36</slf4j.version>
-      <commons.csv.version>1.5</commons.csv.version>
+      <commons.csv.version>1.12.0</commons.csv.version>
       <h2.version>2.3.232</h2.version>
       <junit.version>4.13.2</junit.version>
       <testcontainers.version>1.20.1</testcontainers.version>
