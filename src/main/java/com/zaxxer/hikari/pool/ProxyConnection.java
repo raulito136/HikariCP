@@ -27,8 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import static com.zaxxer.hikari.SQLExceptionOverride.Override.CONTINUE_EVICT;
-import static com.zaxxer.hikari.SQLExceptionOverride.Override.DO_NOT_EVICT;
+import static com.zaxxer.hikari.SQLExceptionOverride.Override.*;
 
 /**
  * This is the proxy class for {@link Connection}.
@@ -156,12 +155,14 @@ public abstract class ProxyConnection implements Connection
       final var exceptionOverride = poolEntry.getPoolBase().exceptionOverride;
       for (int depth = 0; delegate != ClosedConnection.CLOSED_CONNECTION && nse != null && depth < 10; depth++) {
          final var sqlState = nse.getSQLState();
-         if (exceptionOverride != null && exceptionOverride.adjudicate(nse) == DO_NOT_EVICT) {
+         final var shouldEvict = exceptionOverride != null ? exceptionOverride.adjudicate(nse) : CONTINUE_EVICT;
+         if (shouldEvict == DO_NOT_EVICT) {
             break;
          }
          else if (sqlState != null && sqlState.startsWith("08")
              || ERROR_STATES.contains(sqlState)
-             || ERROR_CODES.contains(nse.getErrorCode())) {
+             || ERROR_CODES.contains(nse.getErrorCode())
+             || shouldEvict == MUST_EVICT) {
 
             // broken connection
             evict = true;

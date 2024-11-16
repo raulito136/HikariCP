@@ -4,24 +4,29 @@ import java.sql.SQLException;
 
 /**
  * Users can implement this interface to override the default SQLException handling
- * of HikariCP.  By the time an instance of this interface is invoked HikariCP has
- * already made a determination to evict the Connection from the pool.
- *
- * If the {@link #adjudicate(SQLException)} method returns {@link Override#CONTINUE_EVICT} the eviction will occur, but if the
- * method returns {@link Override#DO_NOT_EVICT} the eviction will be elided.
+ * of HikariCP. When a SQLException is thrown from JDBC execution methods, the
+ * SQLState and error code will be checked to determine if the connection should
+ * be evicted from the pool.
+ * <p>
+ * By supplying an implementation of this interface, users can override the default
+ * handling of SQLExceptions. The {@link #adjudicate(SQLException)} method will be called
+ * with the SQLException that was thrown. If the method returns {@link Override#CONTINUE_EVICT}
+ * the customary built-in handling will occur. If the method returns {@link Override#DO_NOT_EVICT}
+ * the eviction will be elided. If the method returns {@link Override#MUST_EVICT} the eviction will
+ * be evicted regardless of the SQLState or error code.
  */
 public interface SQLExceptionOverride {
    enum Override {
       CONTINUE_EVICT,
-      DO_NOT_EVICT
+      DO_NOT_EVICT,
+      MUST_EVICT
    }
 
    /**
-    * If this method returns {@link Override#CONTINUE_EVICT} then Connection eviction will occur, but if it
-    * returns {@link Override#DO_NOT_EVICT} the eviction will be elided.
+    * This method is called when a SQLException is thrown from a JDBC method.
     *
-    * @param sqlException the #SQLException to adjudicate
-    * @return either one of {@link Override#CONTINUE_EVICT} or {@link Override#DO_NOT_EVICT}
+    * @param sqlException the SQLException that was thrown
+    * @return an {@link Override} value indicating how eviction should proceed
     */
    default Override adjudicate(final SQLException sqlException)
    {
