@@ -371,10 +371,11 @@ instance, it is recommended that ``setRemoveOnCancelPolicy(true)`` is used.
 This property is only available via programmatic configuration or IoC container. This property
 allows you to set an instance of a class, implementing the ``com.zaxxer.hikari.SQLExceptionOverride``
 interface, that will be called before a connection is evicted from the pool due to specific exception
-conditions. Typically, when a ``SQLException`` is throw with specific *SQLStates* or *ErrorCodes* are
-present. The ``adjudicate()`` method will be called on the ``SQLExceptionOverride`` instance, which
-may return either ``Override.CONTINUE_EVICT`` or ``Override.DO_NOT_EVICT``. Except in very specific
-cases ``Override.CONTINUE_EVICT`` should be returned.
+conditions. Typically, when a ``SQLException`` is thrown, connections are evicted from the pool when
+specific *SQLStates* or *ErrorCodes* are present. The ``adjudicate()`` method will be called on the
+``SQLExceptionOverride`` instance, which may return one of: ``Override.CONTINUE_EVICT``. 
+``Override.DO_NOT_EVICT`` or ``Override.MUST_EVICT``. Except in very specific cases 
+``Override.CONTINUE_EVICT`` should be returned, allowing the default evict/no-evict logic to execute.
 *Default: none*
 
 &#128292;``exceptionOverrideClassName``<br/>
