@@ -160,7 +160,6 @@ public abstract class ProxyConnection implements Connection
             break;
          }
          else if (sqlState != null && sqlState.startsWith("08")
-             || nse instanceof SQLTimeoutException
              || ERROR_STATES.contains(sqlState)
              || ERROR_CODES.contains(nse.getErrorCode())) {
 
