@@ -341,7 +341,7 @@ is disabled.  Lowest acceptable value for enabling leak detection is 2000 (2 sec
 *Default: 0*
 
 &#10145;``dataSource``<br/>
-This property is only available via programmatic configuration or IoC container.  This property
+This property is only available via programmatic configuration or IoC container. This property
 allows you to directly set the instance of the ``DataSource`` to be wrapped by the pool, rather than
 having HikariCP construct it via reflection.  This can be useful in some dependency injection
 frameworks. When this property is specified, the ``dataSourceClassName`` property and all
@@ -354,17 +354,34 @@ If this property is not specified, the default schema defined by the JDBC driver
 *Default: driver default*
 
 &#10145;``threadFactory``<br/>
-This property is only available via programmatic configuration or IoC container.  This property
+This property is only available via programmatic configuration or IoC container. This property
 allows you to set the instance of the ``java.util.concurrent.ThreadFactory`` that will be used
 for creating all threads used by the pool. It is needed in some restricted execution environments
 where threads can only be created through a ``ThreadFactory`` provided by the application container.
 *Default: none*
 
 &#10145;``scheduledExecutor``<br/>
-This property is only available via programmatic configuration or IoC container.  This property
+This property is only available via programmatic configuration or IoC container. This property
 allows you to set the instance of the ``java.util.concurrent.ScheduledExecutorService`` that will
 be used for various internally scheduled tasks.  If supplying HikariCP with a ``ScheduledThreadPoolExecutor``
 instance, it is recommended that ``setRemoveOnCancelPolicy(true)`` is used.
+*Default: none*
+
+&#10145;``exceptionOverride``<br/>
+This property is only available via programmatic configuration or IoC container. This property
+allows you to set an instance of a class, implementing the ``com.zaxxer.hikari.SQLExceptionOverride``
+interface, that will be called before a connection is evicted from the pool due to specific exception
+conditions. Typically, when a ``SQLException`` is throw with specific *SQLStates* or *ErrorCodes* are
+present. The ``adjudicate()`` method will be called on the ``SQLExceptionOverride`` instance, which
+may return either ``Override.CONTINUE_EVICT`` or ``Override.DO_NOT_EVICT``. Except in very specific
+cases ``Override.CONTINUE_EVICT`` should be returned.
+*Default: none*
+
+&#128292;``exceptionOverrideClassName``<br/>
+This property allows you to specify the name of a user-supplied class implementing the
+``com.zaxxer.hikari.SQLExceptionOverride`` interface. An instance of the class will be instantiated
+by the pool to adjudicate connection evictions. See the above property ``exceptionOverride`` for a
+full description.
 *Default: none*
 
 ----------------------------------------------------
