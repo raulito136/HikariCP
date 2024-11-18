@@ -1,5 +1,11 @@
 HikariCP Changes
 
+Changes in 6.2.1
+
+ * change default keepaliveTime to 2 minutes
+
+ * fix commons-compress dependency, make test scope
+
 Changes in 6.2.0
 
  * merged #2238 handle SQLTimeoutException without eviction. Users looking to preserve previous behavior

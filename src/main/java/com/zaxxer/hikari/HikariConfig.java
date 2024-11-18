@@ -52,7 +52,7 @@ public class HikariConfig implements HikariConfigMXBean
    private static final long SOFT_TIMEOUT_FLOOR = Long.getLong("com.zaxxer.hikari.timeoutMs.floor", 250L);
    private static final long IDLE_TIMEOUT = MINUTES.toMillis(10);
    private static final long MAX_LIFETIME = MINUTES.toMillis(30);
-   private static final long DEFAULT_KEEPALIVE_TIME = 0L;
+   private static final long DEFAULT_KEEPALIVE_TIME = MINUTES.toMillis(2);
    private static final int DEFAULT_POOL_SIZE = 10;
 
    private static boolean unitTest = false;
@@ -1101,13 +1101,13 @@ public class HikariConfig implements HikariConfigMXBean
       // keepalive time must larger than 30 seconds
       if (keepaliveTime != 0 && keepaliveTime < SECONDS.toMillis(30)) {
          LOGGER.warn("{} - keepaliveTime is less than 30000ms, disabling it.", poolName);
-         keepaliveTime = DEFAULT_KEEPALIVE_TIME;
+         keepaliveTime = 0L;
       }
 
       // keepalive time must be less than maxLifetime (if maxLifetime is enabled)
       if (keepaliveTime != 0 && maxLifetime != 0 && keepaliveTime >= maxLifetime) {
          LOGGER.warn("{} - keepaliveTime is greater than or equal to maxLifetime, disabling it.", poolName);
-         keepaliveTime = DEFAULT_KEEPALIVE_TIME;
+         keepaliveTime = 0L;
       }
 
       if (leakDetectionThreshold > 0 && !unitTest) {

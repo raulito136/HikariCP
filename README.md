@@ -209,7 +209,7 @@ pool. The 'ping' is one of either: invocation of the JDBC4 `isValid()` method, o
 `connectionTestQuery`. Typically, the duration out-of-the-pool should be measured in single digit milliseconds
 or even sub-millisecond, and therefore should have little or no noticeable performance impact. The minimum
 allowed value is 30000ms (30 seconds), but a value in the range of minutes is most desirable.
-*Default: 0 (disabled)*
+*Default: 120000 (2 minutes)*
 
 &#9203;``maxLifetime``<br/>
 This property controls the maximum lifetime of a connection in the pool.  An in-use connection will
@@ -373,8 +373,8 @@ allows you to set an instance of a class, implementing the ``com.zaxxer.hikari.S
 interface, that will be called before a connection is evicted from the pool due to specific exception
 conditions. Typically, when a ``SQLException`` is thrown, connections are evicted from the pool when
 specific *SQLStates* or *ErrorCodes* are present. The ``adjudicate()`` method will be called on the
-``SQLExceptionOverride`` instance, which may return one of: ``Override.CONTINUE_EVICT``. 
-``Override.DO_NOT_EVICT`` or ``Override.MUST_EVICT``. Except in very specific cases 
+``SQLExceptionOverride`` instance, which may return one of: ``Override.CONTINUE_EVICT``.
+``Override.DO_NOT_EVICT`` or ``Override.MUST_EVICT``. Except in very specific cases
 ``Override.CONTINUE_EVICT`` should be returned, allowing the default evict/no-evict logic to execute.
 *Default: none*
 
