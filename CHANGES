@@ -4,7 +4,7 @@ Changes in 6.2.1
 
  * change default keepaliveTime to 2 minutes
 
- * fix commons-compress dependency, make test scope
+ * fix commons-compress dependency, make test scopes
 
 Changes in 6.2.0
 
